@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Double-Slit Experiment Visual Example</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b12;
+      --panel: #141a2b;
+      --text: #e5ecff;
+      --muted: #9db0d5;
+      --accent: #67b7ff;
+      --accent-soft: rgba(103, 183, 255, 0.22);
+      --warn: #ffca6d;
+      --border: #2d3550;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 70% -20%, #1f3562, transparent 60%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+
+    .app {
+      width: min(1100px, 100%);
+      background: linear-gradient(160deg, rgba(255,255,255,0.02), transparent 35%), var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    p { margin: 0; color: var(--muted); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 0;
+    }
+
+    .canvas-wrap {
+      padding: 1rem;
+      border-right: 1px solid var(--border);
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #05070f;
+      display: block;
+    }
+
+    .controls {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .group {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.02);
+    }
+
+    label {
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+      color: var(--muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .legend {
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .badge {
+      color: var(--warn);
+      font-size: 0.75rem;
+      border: 1px solid rgba(255, 202, 109, 0.4);
+      background: rgba(255, 202, 109, 0.1);
+      border-radius: 999px;
+      padding: 0.2rem 0.5rem;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .canvas-wrap { border-right: 0; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>Double-Slit Experiment (Wave Interference View)</h1>
+        <p>Adjust slit spacing, wavelength, and screen distance to see fringe spacing change.</p>
+      </div>
+      <span class="badge">Educational approximation</span>
+    </header>
+
+    <section class="layout">
+      <div class="canvas-wrap">
+        <canvas id="sim" width="760" height="420" aria-label="Double slit simulation canvas"></canvas>
+      </div>
+
+      <aside class="controls">
+        <div class="group">
+          <label for="wavelength">Wavelength λ <span id="wvVal">530 nm</span></label>
+          <input id="wavelength" type="range" min="380" max="700" value="530" />
+
+          <label for="spacing">Slit separation d <span id="spVal">0.25 mm</span></label>
+          <input id="spacing" type="range" min="0.1" max="0.6" value="0.25" step="0.01" />
+
+          <label for="distance">Screen distance L <span id="distVal">1.40 m</span></label>
+          <input id="distance" type="range" min="0.8" max="2.2" value="1.4" step="0.05" />
+        </div>
+
+        <div class="group legend">
+          <strong>What you are seeing</strong>
+          <p>The bright/dark vertical bands on the right are the interference pattern from two coherent slits.</p>
+          <p>Constructive interference occurs where path difference is an integer multiple of λ.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('sim');
+    const ctx = canvas.getContext('2d');
+
+    const controls = {
+      wavelength: document.getElementById('wavelength'),
+      spacing: document.getElementById('spacing'),
+      distance: document.getElementById('distance')
+    };
+
+    const labels = {
+      wavelength: document.getElementById('wvVal'),
+      spacing: document.getElementById('spVal'),
+      distance: document.getElementById('distVal')
+    };
+
+    let phase = 0;
+
+    const lineColorForWavelength = (nm) => {
+      const t = (nm - 380) / (700 - 380);
+      const hue = 270 - t * 270;
+      return `hsl(${hue}, 90%, 65%)`;
+    };
+
+    function draw() {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const lambdaNm = Number(controls.wavelength.value);
+      const dMm = Number(controls.spacing.value);
+      const Lm = Number(controls.distance.value);
+
+      labels.wavelength.textContent = `${lambdaNm.toFixed(0)} nm`;
+      labels.spacing.textContent = `${dMm.toFixed(2)} mm`;
+      labels.distance.textContent = `${Lm.toFixed(2)} m`;
+
+      const lambda = lambdaNm * 1e-9;
+      const d = dMm * 1e-3;
+
+      const sourceX = 95;
+      const barrierX = 250;
+      const screenX = w - 110;
+      const slitGapPx = 95;
+      const slitLen = 12;
+      const screenTop = 35;
+      const screenBottom = h - 35;
+
+      const slitY1 = h / 2 - slitGapPx / 2;
+      const slitY2 = h / 2 + slitGapPx / 2;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#05070f');
+      bg.addColorStop(1, '#080d1a');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = '#2d3550';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(barrierX, screenTop);
+      ctx.lineTo(barrierX, screenBottom);
+      ctx.stroke();
+
+      // Slits in barrier
+      ctx.strokeStyle = '#9fc4ff';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(barrierX, slitY1 - slitLen / 2);
+      ctx.lineTo(barrierX, slitY1 + slitLen / 2);
+      ctx.moveTo(barrierX, slitY2 - slitLen / 2);
+      ctx.lineTo(barrierX, slitY2 + slitLen / 2);
+      ctx.stroke();
+
+      // Source
+      const sourceRadius = 10;
+      const waveColor = lineColorForWavelength(lambdaNm);
+      ctx.fillStyle = waveColor;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = waveColor;
+      ctx.beginPath();
+      ctx.arc(sourceX, h / 2, sourceRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Incoming waves to barrier
+      ctx.strokeStyle = 'rgba(123, 198, 255, 0.25)';
+      for (let i = 0; i < 5; i++) {
+        const r = 40 + i * 28 + (phase % 28);
+        ctx.beginPath();
+        ctx.arc(sourceX, h / 2, r, -0.7, 0.7);
+        ctx.stroke();
+      }
+
+      // Emanating wave circles from each slit
+      ctx.strokeStyle = 'rgba(125, 220, 255, 0.2)';
+      for (let i = 0; i < 6; i++) {
+        const r = 24 + i * 30 + (phase % 30);
+        ctx.beginPath();
+        ctx.arc(barrierX, slitY1, r, -0.35, 0.45);
+        ctx.arc(barrierX, slitY2, r, -0.45, 0.35);
+        ctx.stroke();
+      }
+
+      // Screen
+      ctx.strokeStyle = '#d5ddf4';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(screenX, screenTop);
+      ctx.lineTo(screenX, screenBottom);
+      ctx.stroke();
+
+      // Intensity profile on screen using small-angle approximation:
+      // I(y) = I0 * cos^2(pi * d * y / (lambda * L))
+      for (let y = screenTop; y < screenBottom; y++) {
+        const yCenteredMeters = ((y - h / 2) / (screenBottom - screenTop)) * 0.03;
+        const beta = Math.PI * d * yCenteredMeters / (lambda * Lm);
+        const intensity = Math.cos(beta) ** 2;
+
+        const alpha = 0.07 + intensity * 0.9;
+        ctx.strokeStyle = `${waveColor.replace('hsl', 'hsla').replace(')', `, ${alpha})`)}`;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 6, y);
+        ctx.lineTo(w - 14, y);
+        ctx.stroke();
+      }
+
+      // center guide
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      ctx.moveTo(0, h / 2);
+      ctx.lineTo(w, h / 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Labels
+      ctx.fillStyle = '#e5ecff';
+      ctx.font = '12px system-ui';
+      ctx.fillText('Coherent light source', sourceX - 46, h / 2 + 24);
+      ctx.fillText('Double slit', barrierX - 30, screenTop - 10);
+      ctx.fillText('Screen / detector', screenX - 35, screenTop - 10);
+
+      phase += 0.8;
+      requestAnimationFrame(draw);
+    }
+
+    Object.values(controls).forEach((control) => {
+      control.addEventListener('input', () => {
+        // state is read each animation frame; listener keeps labels responsive
+      });
+    });
+
+    draw();
+  </script>
+</body>
+</html>
