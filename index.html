@@ -322,8 +322,8 @@
         if (measurementActive) {
           const peakOffset = (d / 2) / Lm;
           const width = (lambda * Lm) / (d * 1.7);
-          const peak1 = Math.exp(-((yCenteredMeters - peakOffset) / width) ** 2);
-          const peak2 = Math.exp(-((yCenteredMeters + peakOffset) / width) ** 2);
+          const peak1 = Math.exp(-(((yCenteredMeters - peakOffset) / width) ** 2));
+          const peak2 = Math.exp(-(((yCenteredMeters + peakOffset) / width) ** 2));
           intensity = Math.min(1, (peak1 + peak2) * 0.95);
         }
 
