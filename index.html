@@ -118,6 +118,31 @@
       white-space: nowrap;
     }
 
+    button {
+      width: 100%;
+      border: 1px solid var(--accent);
+      background: rgba(103, 183, 255, 0.15);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 160ms ease;
+    }
+
+    button:hover {
+      background: rgba(103, 183, 255, 0.28);
+    }
+
+    .status {
+      margin-top: 0.5rem;
+      font-size: 0.83rem;
+      color: var(--warn);
+      min-height: 2.3em;
+      line-height: 1.35;
+    }
+
     @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
@@ -153,6 +178,13 @@
           <input id="distance" type="range" min="0.8" max="2.2" value="1.4" step="0.05" />
         </div>
 
+        <div class="group">
+          <strong>Measurement</strong>
+          <p>Trigger which-path detection at the slits.</p>
+          <button id="measureBtn" type="button">Initiate measurement</button>
+          <p id="measureStatus" class="status">No detector active: wave interference is visible.</p>
+        </div>
+
         <div class="group legend">
           <strong>What you are seeing</strong>
           <p>The bright/dark vertical bands on the right are the interference pattern from two coherent slits.</p>
@@ -178,7 +210,11 @@
       distance: document.getElementById('distVal')
     };
 
+    const measureBtn = document.getElementById('measureBtn');
+    const measureStatus = document.getElementById('measureStatus');
+
     let phase = 0;
+    let measurementActive = false;
 
     const lineColorForWavelength = (nm) => {
       const t = (nm - 380) / (700 - 380);
@@ -275,12 +311,21 @@
       ctx.lineTo(screenX, screenBottom);
       ctx.stroke();
 
-      // Intensity profile on screen using small-angle approximation:
-      // I(y) = I0 * cos^2(pi * d * y / (lambda * L))
+      // Intensity profile on screen.
+      // Unmeasured: I(y) = I0 * cos^2(pi * d * y / (lambda * L))
+      // Measured: sum of two broad single-slit-like envelopes (interference suppressed)
       for (let y = screenTop; y < screenBottom; y++) {
         const yCenteredMeters = ((y - h / 2) / (screenBottom - screenTop)) * 0.03;
         const beta = Math.PI * d * yCenteredMeters / (lambda * Lm);
-        const intensity = Math.cos(beta) ** 2;
+        let intensity = Math.cos(beta) ** 2;
+
+        if (measurementActive) {
+          const peakOffset = (d / 2) / Lm;
+          const width = (lambda * Lm) / (d * 1.7);
+          const peak1 = Math.exp(-((yCenteredMeters - peakOffset) / width) ** 2);
+          const peak2 = Math.exp(-((yCenteredMeters + peakOffset) / width) ** 2);
+          intensity = Math.min(1, (peak1 + peak2) * 0.95);
+        }
 
         const alpha = 0.07 + intensity * 0.9;
         ctx.strokeStyle = `${waveColor.replace('hsl', 'hsla').replace(')', `, ${alpha})`)}`;
@@ -306,6 +351,11 @@
       ctx.fillText('Double slit', barrierX - 30, screenTop - 10);
       ctx.fillText('Screen / detector', screenX - 35, screenTop - 10);
 
+      if (measurementActive) {
+        ctx.fillStyle = '#ffca6d';
+        ctx.fillText('Which-path detector ON', barrierX - 46, screenBottom + 18);
+      }
+
       phase += 0.8;
       requestAnimationFrame(draw);
     }
@@ -314,6 +364,18 @@
       control.addEventListener('input', () => {
         // state is read each animation frame; listener keeps labels responsive
       });
+    });
+
+    measureBtn.addEventListener('click', () => {
+      measurementActive = !measurementActive;
+
+      if (measurementActive) {
+        measureBtn.textContent = 'Disable measurement';
+        measureStatus.textContent = 'Detector active: which-path information suppresses interference fringes.';
+      } else {
+        measureBtn.textContent = 'Initiate measurement';
+        measureStatus.textContent = 'No detector active: wave interference is visible.';
+      }
     });
 
     draw();
