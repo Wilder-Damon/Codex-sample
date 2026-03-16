@@ -320,11 +320,14 @@
         let intensity = Math.cos(beta) ** 2;
 
         if (measurementActive) {
-          const peakOffset = (d / 2) / Lm;
-          const width = (lambda * Lm) / (d * 1.7);
-          const peak1 = Math.exp(-(((yCenteredMeters - peakOffset) / width) ** 2));
-          const peak2 = Math.exp(-(((yCenteredMeters + peakOffset) / width) ** 2));
-          intensity = Math.min(1, (peak1 + peak2) * 0.95);
+          // Collapse into two localized hit regions tied to each slit instead of fringes.
+          // We model this directly in screen pixels so the two bars stay visibly separated.
+          const yPxCentered = y - h / 2;
+          const separationPx = Math.max(18, (dMm / 0.25) * (1.4 / Lm) * 28);
+          const widthPx = Math.max(8, (lambdaNm / 530) * 10 + (Lm / 1.4) * 3);
+          const peak1 = Math.exp(-(((yPxCentered - separationPx) / widthPx) ** 2));
+          const peak2 = Math.exp(-(((yPxCentered + separationPx) / widthPx) ** 2));
+          intensity = Math.min(1, (peak1 + peak2) * 0.98);
         }
 
         const alpha = 0.07 + intensity * 0.9;
