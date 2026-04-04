@@ -155,8 +155,8 @@
   <main class="app">
     <header>
       <div>
-        <h1>Double-Slit Experiment (Wave Interference View)</h1>
-        <p>Adjust slit spacing, wavelength, and screen distance to see fringe spacing change.</p>
+        <h1>Double-Slit Experiment (3D Observer Perspective)</h1>
+        <p>Adjust slit spacing, wavelength, and screen distance to see fringe spacing from a full-perspective view.</p>
       </div>
       <span class="badge">Educational approximation</span>
     </header>
@@ -236,127 +236,179 @@
 
       const lambda = lambdaNm * 1e-9;
       const d = dMm * 1e-3;
+      const waveColor = lineColorForWavelength(lambdaNm);
 
-      const sourceX = 95;
-      const barrierX = 250;
-      const screenX = w - 110;
-      const slitGapPx = 95;
-      const slitLen = 12;
-      const screenTop = 35;
-      const screenBottom = h - 35;
+      const fov = 430;
+      const camera = { x: -120, y: 0, z: -250 };
+      const project = (x, y, z) => {
+        const dz = z - camera.z + 1;
+        const scale = fov / dz;
+        return {
+          x: w * 0.43 + (x - camera.x) * scale,
+          y: h * 0.5 - (y - camera.y) * scale,
+          scale
+        };
+      };
 
-      const slitY1 = h / 2 - slitGapPx / 2;
-      const slitY2 = h / 2 + slitGapPx / 2;
+      const sourceZ = 40;
+      const barrierZ = 250;
+      const screenZ = barrierZ + 220 + (Lm - 1.4) * 160;
+      const slitGap = 70 + ((dMm - 0.25) / 0.35) * 72;
 
       ctx.clearRect(0, 0, w, h);
 
       const bg = ctx.createLinearGradient(0, 0, 0, h);
       bg.addColorStop(0, '#05070f');
-      bg.addColorStop(1, '#080d1a');
+      bg.addColorStop(1, '#091329');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, w, h);
 
-      ctx.strokeStyle = '#2d3550';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(barrierX, screenTop);
-      ctx.lineTo(barrierX, screenBottom);
-      ctx.stroke();
-
-      // Slits in barrier
-      ctx.strokeStyle = '#9fc4ff';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(barrierX, slitY1 - slitLen / 2);
-      ctx.lineTo(barrierX, slitY1 + slitLen / 2);
-      ctx.moveTo(barrierX, slitY2 - slitLen / 2);
-      ctx.lineTo(barrierX, slitY2 + slitLen / 2);
-      ctx.stroke();
+      // Perspective tunnel guides (observer view).
+      for (let i = 0; i < 11; i++) {
+        const z = 35 + i * 90;
+        const leftTop = project(-105, 92, z);
+        const rightTop = project(105, 92, z);
+        const leftBottom = project(-105, -92, z);
+        const rightBottom = project(105, -92, z);
+        ctx.strokeStyle = `rgba(125, 152, 220, ${0.24 - i * 0.016})`;
+        ctx.beginPath();
+        ctx.moveTo(leftTop.x, leftTop.y);
+        ctx.lineTo(rightTop.x, rightTop.y);
+        ctx.lineTo(rightBottom.x, rightBottom.y);
+        ctx.lineTo(leftBottom.x, leftBottom.y);
+        ctx.closePath();
+        ctx.stroke();
+      }
 
       // Source
-      const sourceRadius = 10;
-      const waveColor = lineColorForWavelength(lambdaNm);
+      const source = project(0, 0, sourceZ);
+      const sourceRadius = 13 * source.scale;
       ctx.fillStyle = waveColor;
-      ctx.shadowBlur = 16;
+      ctx.shadowBlur = 18;
       ctx.shadowColor = waveColor;
       ctx.beginPath();
-      ctx.arc(sourceX, h / 2, sourceRadius, 0, Math.PI * 2);
+      ctx.arc(source.x, source.y, sourceRadius, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Incoming waves to barrier
-      ctx.strokeStyle = 'rgba(123, 198, 255, 0.25)';
-      for (let i = 0; i < 5; i++) {
-        const r = 40 + i * 28 + (phase % 28);
+      // Incoming wavefronts
+      for (let i = 0; i < 7; i++) {
+        const z = sourceZ + 14 + i * 34 + (phase % 34);
+        if (z > barrierZ - 8) {
+          continue;
+        }
+        const c = project(0, 0, z);
+        ctx.strokeStyle = 'rgba(123, 198, 255, 0.25)';
         ctx.beginPath();
-        ctx.arc(sourceX, h / 2, r, -0.7, 0.7);
+        ctx.ellipse(c.x, c.y, 20 * c.scale, 52 * c.scale, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      // Emanating wave circles from each slit
-      ctx.strokeStyle = 'rgba(125, 220, 255, 0.2)';
-      for (let i = 0; i < 6; i++) {
-        const r = 24 + i * 30 + (phase % 30);
-        ctx.beginPath();
-        ctx.arc(barrierX, slitY1, r, -0.35, 0.45);
-        ctx.arc(barrierX, slitY2, r, -0.45, 0.35);
-        ctx.stroke();
-      }
-
-      // Screen
-      ctx.strokeStyle = '#d5ddf4';
-      ctx.lineWidth = 2;
+      // Barrier panel
+      const barrierTopL = project(-100, 90, barrierZ);
+      const barrierTopR = project(100, 90, barrierZ);
+      const barrierBottomL = project(-100, -90, barrierZ);
+      const barrierBottomR = project(100, -90, barrierZ);
+      ctx.fillStyle = 'rgba(45, 53, 80, 0.45)';
       ctx.beginPath();
-      ctx.moveTo(screenX, screenTop);
-      ctx.lineTo(screenX, screenBottom);
+      ctx.moveTo(barrierTopL.x, barrierTopL.y);
+      ctx.lineTo(barrierTopR.x, barrierTopR.y);
+      ctx.lineTo(barrierBottomR.x, barrierBottomR.y);
+      ctx.lineTo(barrierBottomL.x, barrierBottomL.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#2d3550';
       ctx.stroke();
 
-      // Intensity profile on screen.
-      // Unmeasured: I(y) = I0 * cos^2(pi * d * y / (lambda * L))
-      // Measured: sum of two broad single-slit-like envelopes (interference suppressed)
-      for (let y = screenTop; y < screenBottom; y++) {
-        const yCenteredMeters = ((y - h / 2) / (screenBottom - screenTop)) * 0.03;
-        const beta = Math.PI * d * yCenteredMeters / (lambda * Lm);
+      // Slits
+      const slitHalfLen = 18;
+      const drawSlit = (slitY) => {
+        const top = project(0, slitY + slitHalfLen, barrierZ + 0.1);
+        const bottom = project(0, slitY - slitHalfLen, barrierZ + 0.1);
+        ctx.strokeStyle = '#9fc4ff';
+        ctx.lineWidth = 4 * top.scale;
+        ctx.beginPath();
+        ctx.moveTo(top.x, top.y);
+        ctx.lineTo(bottom.x, bottom.y);
+        ctx.stroke();
+      };
+
+      const slitY1 = slitGap / 2;
+      const slitY2 = -slitGap / 2;
+      drawSlit(slitY1);
+      drawSlit(slitY2);
+
+      // Waves after slits.
+      for (let i = 0; i < 6; i++) {
+        const z = barrierZ + 18 + i * 40 + (phase % 40);
+        if (z >= screenZ) {
+          continue;
+        }
+        const p1 = project(0, slitY1, z);
+        const p2 = project(0, slitY2, z);
+        ctx.strokeStyle = 'rgba(125, 220, 255, 0.22)';
+        ctx.beginPath();
+        ctx.ellipse(p1.x, p1.y, 20 * p1.scale, 36 * p1.scale, 0, 0, Math.PI * 2);
+        ctx.ellipse(p2.x, p2.y, 20 * p2.scale, 36 * p2.scale, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Screen in perspective.
+      const scrTL = project(-95, 88, screenZ);
+      const scrTR = project(95, 88, screenZ);
+      const scrBL = project(-95, -88, screenZ);
+      const scrBR = project(95, -88, screenZ);
+      ctx.fillStyle = 'rgba(213, 221, 244, 0.08)';
+      ctx.beginPath();
+      ctx.moveTo(scrTL.x, scrTL.y);
+      ctx.lineTo(scrTR.x, scrTR.y);
+      ctx.lineTo(scrBR.x, scrBR.y);
+      ctx.lineTo(scrBL.x, scrBL.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#d5ddf4';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      // Intensity profile painted as horizontal strips on the screen.
+      const strips = 120;
+      for (let i = 0; i <= strips; i++) {
+        const yNorm = i / strips;
+        const yMeters = (0.5 - yNorm) * 0.03;
+        const beta = Math.PI * d * yMeters / (lambda * Lm);
         let intensity = Math.cos(beta) ** 2;
 
         if (measurementActive) {
-          // Collapse into two localized hit regions tied to each slit instead of fringes.
-          // We model this directly in screen pixels so the two bars stay visibly separated.
-          const yPxCentered = y - h / 2;
-          const separationPx = Math.max(18, (dMm / 0.25) * (1.4 / Lm) * 28);
-          const widthPx = Math.max(8, (lambdaNm / 530) * 10 + (Lm / 1.4) * 3);
-          const peak1 = Math.exp(-(((yPxCentered - separationPx) / widthPx) ** 2));
-          const peak2 = Math.exp(-(((yPxCentered + separationPx) / widthPx) ** 2));
+          const yCentered = (yNorm - 0.5) * 180;
+          const separation = Math.max(18, (dMm / 0.25) * (1.4 / Lm) * 28);
+          const width = Math.max(9, (lambdaNm / 530) * 10 + (Lm / 1.4) * 3);
+          const peak1 = Math.exp(-(((yCentered - separation) / width) ** 2));
+          const peak2 = Math.exp(-(((yCentered + separation) / width) ** 2));
           intensity = Math.min(1, (peak1 + peak2) * 0.98);
         }
 
-        const alpha = 0.07 + intensity * 0.9;
+        const left = project(-92, 88 - yNorm * 176, screenZ + 0.2);
+        const right = project(92, 88 - yNorm * 176, screenZ + 0.2);
+        const alpha = 0.08 + intensity * 0.9;
         ctx.strokeStyle = `${waveColor.replace('hsl', 'hsla').replace(')', `, ${alpha})`)}`;
         ctx.beginPath();
-        ctx.moveTo(screenX + 6, y);
-        ctx.lineTo(w - 14, y);
+        ctx.moveTo(left.x, left.y);
+        ctx.lineTo(right.x, right.y);
         ctx.stroke();
       }
-
-      // center guide
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-      ctx.beginPath();
-      ctx.moveTo(0, h / 2);
-      ctx.lineTo(w, h / 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
 
       // Labels
       ctx.fillStyle = '#e5ecff';
       ctx.font = '12px system-ui';
-      ctx.fillText('Coherent light source', sourceX - 46, h / 2 + 24);
-      ctx.fillText('Double slit', barrierX - 30, screenTop - 10);
-      ctx.fillText('Screen / detector', screenX - 35, screenTop - 10);
+      ctx.fillText('Observer', source.x - 28, source.y + 28);
+      const barrierLabel = project(0, 103, barrierZ);
+      const screenLabel = project(0, 103, screenZ);
+      ctx.fillText('Double slit', barrierLabel.x - 26, barrierLabel.y);
+      ctx.fillText('Screen / detector', screenLabel.x - 40, screenLabel.y);
 
       if (measurementActive) {
         ctx.fillStyle = '#ffca6d';
-        ctx.fillText('Which-path detector ON', barrierX - 46, screenBottom + 18);
+        ctx.fillText('Which-path detector ON', barrierLabel.x - 55, barrierLabel.y + 16);
       }
 
       phase += 0.8;
