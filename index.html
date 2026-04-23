@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Double-Slit Experiment Visual Example</title>
+  <title>Climate Energy Balance Lab</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #090b12;
-      --panel: #141a2b;
-      --text: #e5ecff;
-      --muted: #9db0d5;
-      --accent: #67b7ff;
-      --accent-soft: rgba(103, 183, 255, 0.22);
-      --warn: #ffca6d;
-      --border: #2d3550;
+      --bg: #050711;
+      --panel: #0f1630;
+      --text: #e6efff;
+      --muted: #9db5e8;
+      --line: #2c3f78;
+      --accent: #73e7ff;
+      --good: #6ff0b3;
+      --warn: #ffcc7d;
+      --danger: #ff7d8a;
     }
 
     * { box-sizing: border-box; }
@@ -22,132 +23,138 @@
     body {
       margin: 0;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 70% -20%, #1f3562, transparent 60%), var(--bg);
       color: var(--text);
+      background: radial-gradient(1200px 700px at 12% -10%, #2a3c78, transparent 56%),
+                  radial-gradient(1000px 800px at 110% 110%, #2a1a52, transparent 60%),
+                  var(--bg);
       min-height: 100vh;
       display: grid;
       place-items: center;
-      padding: 1.5rem;
+      padding: 1rem;
     }
 
     .app {
-      width: min(1100px, 100%);
-      background: linear-gradient(160deg, rgba(255,255,255,0.02), transparent 35%), var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      width: min(1200px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+      background: linear-gradient(155deg, rgba(255,255,255,0.04), transparent 38%), var(--panel);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
 
     header {
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid var(--line);
       display: flex;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 0.8rem;
       align-items: center;
       flex-wrap: wrap;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 1.25rem;
-    }
-
+    h1 { margin: 0; font-size: 1.3rem; }
     p { margin: 0; color: var(--muted); }
+
+    .badge {
+      border: 1px solid rgba(115, 231, 255, 0.5);
+      color: var(--accent);
+      background: rgba(115, 231, 255, 0.1);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      padding: 0.24rem 0.6rem;
+      white-space: nowrap;
+    }
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 0;
+      grid-template-columns: 1fr 350px;
+      min-height: 640px;
     }
 
-    .canvas-wrap {
-      padding: 1rem;
-      border-right: 1px solid var(--border);
+    .sim-wrap {
+      border-right: 1px solid var(--line);
+      padding: 0.9rem;
     }
 
     canvas {
       width: 100%;
       height: auto;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #05070f;
       display: block;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #03050e;
     }
 
-    .controls {
-      padding: 1rem;
+    .panel {
+      padding: 0.9rem;
       display: flex;
       flex-direction: column;
-      gap: 0.9rem;
+      gap: 0.8rem;
+      overflow: auto;
     }
 
     .group {
-      border: 1px solid var(--border);
+      border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 0.75rem;
-      background: rgba(255,255,255,0.02);
+      padding: 0.7rem;
+      background: rgba(255,255,255,0.03);
     }
+
+    .group strong { display: block; margin-bottom: 0.35rem; }
 
     label {
-      font-size: 0.9rem;
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.4rem;
+      margin: 0.4rem 0;
       color: var(--muted);
+      font-size: 0.88rem;
     }
 
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent);
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      font-size: 0.86rem;
     }
 
-    .legend {
-      font-size: 0.85rem;
-      line-height: 1.4;
+    .metric {
+      border: 1px solid rgba(157, 181, 232, 0.3);
+      border-radius: 8px;
+      padding: 0.35rem;
+      background: rgba(3, 6, 20, 0.65);
     }
 
-    .badge {
-      color: var(--warn);
-      font-size: 0.75rem;
-      border: 1px solid rgba(255, 202, 109, 0.4);
-      background: rgba(255, 202, 109, 0.1);
-      border-radius: 999px;
-      padding: 0.2rem 0.5rem;
-      white-space: nowrap;
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
     }
 
     button {
-      width: 100%;
-      border: 1px solid var(--accent);
-      background: rgba(103, 183, 255, 0.15);
+      border: 1px solid #5d78c8;
+      background: rgba(115, 231, 255, 0.12);
       color: var(--text);
       border-radius: 8px;
-      padding: 0.55rem 0.7rem;
-      font-size: 0.9rem;
+      padding: 0.5rem 0.45rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 160ms ease;
     }
 
-    button:hover {
-      background: rgba(103, 183, 255, 0.28);
-    }
+    button:hover { background: rgba(115, 231, 255, 0.24); }
 
-    .status {
-      margin-top: 0.5rem;
-      font-size: 0.83rem;
-      color: var(--warn);
-      min-height: 2.3em;
-      line-height: 1.35;
-    }
+    .note { font-size: 0.82rem; line-height: 1.38; }
 
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-      .canvas-wrap { border-right: 0; border-bottom: 1px solid var(--border); }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .sim-wrap { border-right: 0; border-bottom: 1px solid var(--line); }
     }
   </style>
 </head>
@@ -155,40 +162,56 @@
   <main class="app">
     <header>
       <div>
-        <h1>Double-Slit Experiment (3D Observer Perspective)</h1>
-        <p>Adjust slit spacing, wavelength, and screen distance to see fringe spacing from a full-perspective view.</p>
+        <h1>Planetary Energy Balance Lab</h1>
+        <p>Explore how greenhouse gases, sunlight, clouds, and oceans shape Earth-like climate over time.</p>
       </div>
-      <span class="badge">Educational approximation</span>
+      <span class="badge">Interactive STEM simulation</span>
     </header>
 
     <section class="layout">
-      <div class="canvas-wrap">
-        <canvas id="sim" width="760" height="420" aria-label="Double slit simulation canvas"></canvas>
+      <div class="sim-wrap">
+        <canvas id="sim" width="820" height="620" aria-label="Climate simulation"></canvas>
       </div>
 
-      <aside class="controls">
+      <aside class="panel">
         <div class="group">
-          <label for="wavelength">Wavelength λ <span id="wvVal">530 nm</span></label>
-          <input id="wavelength" type="range" min="380" max="700" value="530" />
+          <strong>Forcing controls</strong>
+          <label>CO₂ concentration <span id="co2Out">420 ppm</span></label>
+          <input id="co2" type="range" min="220" max="900" value="420" step="1" />
 
-          <label for="spacing">Slit separation d <span id="spVal">0.25 mm</span></label>
-          <input id="spacing" type="range" min="0.1" max="0.6" value="0.25" step="0.01" />
+          <label>Solar input <span id="solarOut">1361 W/m²</span></label>
+          <input id="solar" type="range" min="1280" max="1450" value="1361" step="1" />
 
-          <label for="distance">Screen distance L <span id="distVal">1.40 m</span></label>
-          <input id="distance" type="range" min="0.8" max="2.2" value="1.4" step="0.05" />
+          <label>Cloud / ice albedo <span id="albedoOut">0.30</span></label>
+          <input id="albedo" type="range" min="0.15" max="0.75" value="0.30" step="0.01" />
+
+          <label>Ocean heat uptake <span id="oceanOut">0.65</span></label>
+          <input id="ocean" type="range" min="0.20" max="1.00" value="0.65" step="0.01" />
         </div>
 
         <div class="group">
-          <strong>Measurement</strong>
-          <p>Trigger which-path detection at the slits.</p>
-          <button id="measureBtn" type="button">Initiate measurement</button>
-          <p id="measureStatus" class="status">No detector active: wave interference is visible.</p>
+          <strong>Live climate state</strong>
+          <div class="metrics">
+            <div class="metric"><span>Global temp anomaly</span><b id="tempOut">+0.0 °C</b></div>
+            <div class="metric"><span>Net radiative flux</span><b id="fluxOut">0.00 W/m²</b></div>
+            <div class="metric"><span>Sea level rise proxy</span><b id="seaOut">0 cm</b></div>
+            <div class="metric"><span>Extreme weather index</span><b id="riskOut">0 / 100</b></div>
+          </div>
         </div>
 
-        <div class="group legend">
-          <strong>What you are seeing</strong>
-          <p>The bright/dark vertical bands on the right are the interference pattern from two coherent slits.</p>
-          <p>Constructive interference occurs where path difference is an integer multiple of λ.</p>
+        <div class="group">
+          <strong>Scenario presets</strong>
+          <div class="actions">
+            <button data-preset="preindustrial">Preindustrial</button>
+            <button data-preset="today">Today</button>
+            <button data-preset="high">High emissions</button>
+            <button data-preset="mitigation">Mitigation</button>
+          </div>
+        </div>
+
+        <div class="group note">
+          <strong>Educational note</strong>
+          <p>This is a simplified energy-balance model: incoming shortwave energy competes with outgoing infrared cooling. Extra greenhouse gases reduce outgoing heat, increasing temperature until a new equilibrium forms.</p>
         </div>
       </aside>
     </section>
@@ -198,242 +221,227 @@
     const canvas = document.getElementById('sim');
     const ctx = canvas.getContext('2d');
 
-    const controls = {
-      wavelength: document.getElementById('wavelength'),
-      spacing: document.getElementById('spacing'),
-      distance: document.getElementById('distance')
+    const ui = {
+      co2: document.getElementById('co2'),
+      solar: document.getElementById('solar'),
+      albedo: document.getElementById('albedo'),
+      ocean: document.getElementById('ocean'),
+      co2Out: document.getElementById('co2Out'),
+      solarOut: document.getElementById('solarOut'),
+      albedoOut: document.getElementById('albedoOut'),
+      oceanOut: document.getElementById('oceanOut'),
+      tempOut: document.getElementById('tempOut'),
+      fluxOut: document.getElementById('fluxOut'),
+      seaOut: document.getElementById('seaOut'),
+      riskOut: document.getElementById('riskOut')
     };
 
-    const labels = {
-      wavelength: document.getElementById('wvVal'),
-      spacing: document.getElementById('spVal'),
-      distance: document.getElementById('distVal')
+    const presets = {
+      preindustrial: { co2: 280, solar: 1361, albedo: 0.31, ocean: 0.8 },
+      today: { co2: 420, solar: 1361, albedo: 0.30, ocean: 0.65 },
+      high: { co2: 780, solar: 1375, albedo: 0.24, ocean: 0.40 },
+      mitigation: { co2: 360, solar: 1361, albedo: 0.33, ocean: 0.82 }
     };
 
-    const measureBtn = document.getElementById('measureBtn');
-    const measureStatus = document.getElementById('measureStatus');
-
+    let simYear = 0;
+    let tempAnomaly = 0;
+    let seaLevel = 0;
     let phase = 0;
-    let measurementActive = false;
 
-    const lineColorForWavelength = (nm) => {
-      const t = (nm - 380) / (700 - 380);
-      const hue = 270 - t * 270;
-      return `hsl(${hue}, 90%, 65%)`;
-    };
+    const aerosols = Array.from({ length: 220 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      z: Math.random(),
+      drift: (Math.random() - 0.5) * 0.8
+    }));
 
-    function draw() {
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function toColor(t) {
+      const hue = 210 - clamp((t + 2) / 8, 0, 1) * 210;
+      return `hsl(${hue}, 92%, 60%)`;
+    }
+
+    function modelStep() {
+      const co2 = Number(ui.co2.value);
+      const solar = Number(ui.solar.value);
+      const albedo = Number(ui.albedo.value);
+      const ocean = Number(ui.ocean.value);
+
+      ui.co2Out.textContent = `${co2.toFixed(0)} ppm`;
+      ui.solarOut.textContent = `${solar.toFixed(0)} W/m²`;
+      ui.albedoOut.textContent = albedo.toFixed(2);
+      ui.oceanOut.textContent = ocean.toFixed(2);
+
+      const incoming = (solar / 4) * (1 - albedo);
+      const co2Forcing = 5.35 * Math.log(co2 / 280);
+      const outgoing = 239 + 1.1 * tempAnomaly;
+      const netFlux = incoming + co2Forcing - outgoing;
+
+      const inertia = 0.035 + ocean * 0.08;
+      tempAnomaly += netFlux * inertia;
+      tempAnomaly = clamp(tempAnomaly, -3, 8);
+
+      seaLevel += Math.max(0, tempAnomaly) * (0.008 + (1 - ocean) * 0.01);
+      seaLevel = clamp(seaLevel, 0, 250);
+
+      const risk = clamp((Math.max(0, tempAnomaly) * 14) + (Math.max(0, netFlux) * 9), 0, 100);
+
+      ui.tempOut.textContent = `${tempAnomaly >= 0 ? '+' : ''}${tempAnomaly.toFixed(2)} °C`;
+      ui.tempOut.style.color = toColor(tempAnomaly);
+      ui.fluxOut.textContent = `${netFlux >= 0 ? '+' : ''}${netFlux.toFixed(2)} W/m²`;
+      ui.fluxOut.style.color = netFlux > 0 ? 'var(--warn)' : 'var(--good)';
+      ui.seaOut.textContent = `${seaLevel.toFixed(1)} cm`;
+      ui.seaOut.style.color = seaLevel > 60 ? 'var(--danger)' : 'var(--accent)';
+      ui.riskOut.textContent = `${risk.toFixed(0)} / 100`;
+      ui.riskOut.style.color = risk > 70 ? 'var(--danger)' : risk > 40 ? 'var(--warn)' : 'var(--good)';
+
+      simYear += 0.08;
+
+      return { co2, solar, albedo, ocean, netFlux, risk };
+    }
+
+    function drawWorld(state) {
       const w = canvas.width;
       const h = canvas.height;
 
-      const lambdaNm = Number(controls.wavelength.value);
-      const dMm = Number(controls.spacing.value);
-      const Lm = Number(controls.distance.value);
-
-      labels.wavelength.textContent = `${lambdaNm.toFixed(0)} nm`;
-      labels.spacing.textContent = `${dMm.toFixed(2)} mm`;
-      labels.distance.textContent = `${Lm.toFixed(2)} m`;
-
-      const lambda = lambdaNm * 1e-9;
-      const d = dMm * 1e-3;
-      const waveColor = lineColorForWavelength(lambdaNm);
-
-      const fov = 430;
-      const camera = { x: -120, y: 0, z: -250 };
-      const project = (x, y, z) => {
-        const dz = z - camera.z + 1;
-        const scale = fov / dz;
-        return {
-          x: w * 0.43 + (x - camera.x) * scale,
-          y: h * 0.5 - (y - camera.y) * scale,
-          scale
-        };
-      };
-
-      const sourceZ = 40;
-      const barrierZ = 250;
-      const screenZ = barrierZ + 220 + (Lm - 1.4) * 160;
-      const slitGap = 70 + ((dMm - 0.25) / 0.35) * 72;
-
-      ctx.clearRect(0, 0, w, h);
-
-      const bg = ctx.createLinearGradient(0, 0, 0, h);
-      bg.addColorStop(0, '#05070f');
-      bg.addColorStop(1, '#091329');
-      ctx.fillStyle = bg;
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, '#050915');
+      sky.addColorStop(1, '#071a36');
+      ctx.fillStyle = sky;
       ctx.fillRect(0, 0, w, h);
 
-      // Perspective tunnel guides (observer view).
-      for (let i = 0; i < 11; i++) {
-        const z = 35 + i * 90;
-        const leftTop = project(-105, 92, z);
-        const rightTop = project(105, 92, z);
-        const leftBottom = project(-105, -92, z);
-        const rightBottom = project(105, -92, z);
-        ctx.strokeStyle = `rgba(125, 152, 220, ${0.24 - i * 0.016})`;
+      const sunX = 100;
+      const sunY = 120;
+      const sunPower = (state.solar - 1280) / 170;
+      const sunR = 35 + sunPower * 18;
+      const sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 3);
+      sunGlow.addColorStop(0, 'rgba(255,240,145,0.95)');
+      sunGlow.addColorStop(1, 'rgba(255,180,60,0)');
+      ctx.fillStyle = sunGlow;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunR * 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fff3be';
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+      ctx.fill();
+
+      const planetX = w * 0.55;
+      const planetY = h * 0.54;
+      const planetR = 152;
+
+      const oceanGrad = ctx.createRadialGradient(planetX - 48, planetY - 45, 22, planetX, planetY, planetR);
+      oceanGrad.addColorStop(0, '#2c8fff');
+      oceanGrad.addColorStop(0.6, '#0d3f88');
+      oceanGrad.addColorStop(1, '#082149');
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(planetX, planetY, planetR, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.fillStyle = oceanGrad;
+      ctx.fillRect(planetX - planetR, planetY - planetR, planetR * 2, planetR * 2);
+
+      const heatTone = clamp((tempAnomaly + 1) / 6, 0, 1);
+      for (let i = 0; i < 8; i++) {
+        const y = planetY - planetR + (i / 8) * planetR * 2;
+        const alpha = 0.05 + heatTone * 0.2;
+        ctx.fillStyle = `rgba(255, ${130 - i * 8}, ${80 - i * 4}, ${alpha})`;
+        ctx.fillRect(planetX - planetR, y, planetR * 2, planetR / 8);
+      }
+
+      // Continents
+      ctx.fillStyle = 'rgba(90, 209, 144, 0.78)';
+      const drift = phase * 0.003;
+      for (let i = 0; i < 5; i++) {
+        const cx = planetX - 80 + i * 50 + Math.sin(drift + i) * 12;
+        const cy = planetY - 45 + Math.cos(drift * 1.2 + i * 1.6) * 60;
         ctx.beginPath();
-        ctx.moveTo(leftTop.x, leftTop.y);
-        ctx.lineTo(rightTop.x, rightTop.y);
-        ctx.lineTo(rightBottom.x, rightBottom.y);
-        ctx.lineTo(leftBottom.x, leftBottom.y);
-        ctx.closePath();
+        ctx.ellipse(cx, cy, 38 - i * 3, 18 + (i % 2) * 8, drift + i, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // Atmosphere layers
+      const greenhouse = clamp(Math.log(state.co2 / 280) / Math.log(900 / 280), 0, 1);
+      for (let layer = 0; layer < 5; layer++) {
+        const radius = planetR + 13 + layer * 10;
+        const alpha = 0.07 + greenhouse * 0.18 - layer * 0.01;
+        ctx.strokeStyle = `rgba(255, ${130 + layer * 12}, ${140 + layer * 8}, ${Math.max(0, alpha)})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(planetX, planetY, radius, -0.2, Math.PI + 0.2);
         ctx.stroke();
       }
 
-      // Source
-      const source = project(0, 0, sourceZ);
-      const sourceRadius = 13 * source.scale;
-      ctx.fillStyle = waveColor;
-      ctx.shadowBlur = 18;
-      ctx.shadowColor = waveColor;
-      ctx.beginPath();
-      ctx.arc(source.x, source.y, sourceRadius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      // Incoming wavefronts
+      // Radiation arrows (incoming & outgoing)
+      ctx.lineWidth = 2.4;
       for (let i = 0; i < 7; i++) {
-        const z = sourceZ + 14 + i * 34 + (phase % 34);
-        if (z > barrierZ - 8) {
-          continue;
-        }
-        const c = project(0, 0, z);
-        ctx.strokeStyle = 'rgba(123, 198, 255, 0.25)';
+        const y = 220 + i * 34;
+        const bend = Math.sin(phase * 0.02 + i) * 10;
+        ctx.strokeStyle = 'rgba(255, 228, 140, 0.85)';
         ctx.beginPath();
-        ctx.ellipse(c.x, c.y, 20 * c.scale, 52 * c.scale, 0, 0, Math.PI * 2);
+        ctx.moveTo(170, y);
+        ctx.lineTo(planetX - planetR - 15 + bend, y + 10);
         ctx.stroke();
       }
 
-      // Barrier panel
-      const barrierTopL = project(-100, 90, barrierZ);
-      const barrierTopR = project(100, 90, barrierZ);
-      const barrierBottomL = project(-100, -90, barrierZ);
-      const barrierBottomR = project(100, -90, barrierZ);
-      ctx.fillStyle = 'rgba(45, 53, 80, 0.45)';
-      ctx.beginPath();
-      ctx.moveTo(barrierTopL.x, barrierTopL.y);
-      ctx.lineTo(barrierTopR.x, barrierTopR.y);
-      ctx.lineTo(barrierBottomR.x, barrierBottomR.y);
-      ctx.lineTo(barrierBottomL.x, barrierBottomL.y);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = '#2d3550';
-      ctx.stroke();
-
-      // Slits
-      const slitHalfLen = 18;
-      const drawSlit = (slitY) => {
-        const top = project(0, slitY + slitHalfLen, barrierZ + 0.1);
-        const bottom = project(0, slitY - slitHalfLen, barrierZ + 0.1);
-        ctx.strokeStyle = '#9fc4ff';
-        ctx.lineWidth = 4 * top.scale;
+      const trapped = Math.round(greenhouse * 10);
+      for (let i = 0; i < 10; i++) {
+        const x = planetX + 10 + i * 20;
+        const yBase = planetY + planetR - 30 - (i % 3) * 20;
+        const reflected = i >= trapped;
+        ctx.strokeStyle = reflected ? 'rgba(120, 235, 255, 0.82)' : 'rgba(255, 126, 120, 0.88)';
         ctx.beginPath();
-        ctx.moveTo(top.x, top.y);
-        ctx.lineTo(bottom.x, bottom.y);
-        ctx.stroke();
-      };
-
-      const slitY1 = slitGap / 2;
-      const slitY2 = -slitGap / 2;
-      drawSlit(slitY1);
-      drawSlit(slitY2);
-
-      // Waves after slits.
-      for (let i = 0; i < 6; i++) {
-        const z = barrierZ + 18 + i * 40 + (phase % 40);
-        if (z >= screenZ) {
-          continue;
-        }
-        const p1 = project(0, slitY1, z);
-        const p2 = project(0, slitY2, z);
-        ctx.strokeStyle = 'rgba(125, 220, 255, 0.22)';
-        ctx.beginPath();
-        ctx.ellipse(p1.x, p1.y, 20 * p1.scale, 36 * p1.scale, 0, 0, Math.PI * 2);
-        ctx.ellipse(p2.x, p2.y, 20 * p2.scale, 36 * p2.scale, 0, 0, Math.PI * 2);
+        ctx.moveTo(x, yBase);
+        const yTop = reflected ? yBase - 160 : yBase - 80;
+        ctx.quadraticCurveTo(x + 16, yBase - 60, x + 5, yTop);
         ctx.stroke();
       }
 
-      // Screen in perspective.
-      const scrTL = project(-95, 88, screenZ);
-      const scrTR = project(95, 88, screenZ);
-      const scrBL = project(-95, -88, screenZ);
-      const scrBR = project(95, -88, screenZ);
-      ctx.fillStyle = 'rgba(213, 221, 244, 0.08)';
-      ctx.beginPath();
-      ctx.moveTo(scrTL.x, scrTL.y);
-      ctx.lineTo(scrTR.x, scrTR.y);
-      ctx.lineTo(scrBR.x, scrBR.y);
-      ctx.lineTo(scrBL.x, scrBL.y);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = '#d5ddf4';
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-
-      // Intensity profile painted as horizontal strips on the screen.
-      const strips = 120;
-      for (let i = 0; i <= strips; i++) {
-        const yNorm = i / strips;
-        const yMeters = (0.5 - yNorm) * 0.03;
-        const beta = Math.PI * d * yMeters / (lambda * Lm);
-        let intensity = Math.cos(beta) ** 2;
-
-        if (measurementActive) {
-          const yCentered = (yNorm - 0.5) * 180;
-          const separation = Math.max(18, (dMm / 0.25) * (1.4 / Lm) * 28);
-          const width = Math.max(9, (lambdaNm / 530) * 10 + (Lm / 1.4) * 3);
-          const peak1 = Math.exp(-(((yCentered - separation) / width) ** 2));
-          const peak2 = Math.exp(-(((yCentered + separation) / width) ** 2));
-          intensity = Math.min(1, (peak1 + peak2) * 0.98);
-        }
-
-        const left = project(-92, 88 - yNorm * 176, screenZ + 0.2);
-        const right = project(92, 88 - yNorm * 176, screenZ + 0.2);
-        const alpha = 0.08 + intensity * 0.9;
-        ctx.strokeStyle = `${waveColor.replace('hsl', 'hsla').replace(')', `, ${alpha})`)}`;
+      // Particles for depth
+      aerosols.forEach((p, i) => {
+        p.y += 0.15 + p.z * 0.5;
+        p.x += p.drift;
+        if (p.y > h + 10) p.y = -8;
+        if (p.x < -8) p.x = w + 8;
+        if (p.x > w + 8) p.x = -8;
+        const glow = 1 + p.z * 2.6;
+        ctx.fillStyle = i % 3 === 0 ? 'rgba(140,220,255,0.3)' : 'rgba(255,255,255,0.25)';
         ctx.beginPath();
-        ctx.moveTo(left.x, left.y);
-        ctx.lineTo(right.x, right.y);
-        ctx.stroke();
-      }
+        ctx.arc(p.x, p.y, glow, 0, Math.PI * 2);
+        ctx.fill();
+      });
 
-      // Labels
-      ctx.fillStyle = '#e5ecff';
-      ctx.font = '12px system-ui';
-      ctx.fillText('Observer', source.x - 28, source.y + 28);
-      const barrierLabel = project(0, 103, barrierZ);
-      const screenLabel = project(0, 103, screenZ);
-      ctx.fillText('Double slit', barrierLabel.x - 26, barrierLabel.y);
-      ctx.fillText('Screen / detector', screenLabel.x - 40, screenLabel.y);
-
-      if (measurementActive) {
-        ctx.fillStyle = '#ffca6d';
-        ctx.fillText('Which-path detector ON', barrierLabel.x - 55, barrierLabel.y + 16);
-      }
-
-      phase += 0.8;
-      requestAnimationFrame(draw);
+      ctx.fillStyle = '#e7f0ff';
+      ctx.font = '15px system-ui';
+      ctx.fillText(`Simulation year: ${Math.floor(simYear + 2026)}`, 20, 30);
+      ctx.fillText('Yellow arrows = incoming solar energy', 20, h - 60);
+      ctx.fillText('Red/blue arrows = outgoing infrared (trapped vs escaped)', 20, h - 35);
     }
 
-    Object.values(controls).forEach((control) => {
-      control.addEventListener('input', () => {
-        // state is read each animation frame; listener keeps labels responsive
+    function tick() {
+      const state = modelStep();
+      drawWorld(state);
+      phase += 1;
+      requestAnimationFrame(tick);
+    }
+
+    document.querySelectorAll('button[data-preset]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const set = presets[btn.dataset.preset];
+        ui.co2.value = set.co2;
+        ui.solar.value = set.solar;
+        ui.albedo.value = set.albedo;
+        ui.ocean.value = set.ocean;
       });
     });
 
-    measureBtn.addEventListener('click', () => {
-      measurementActive = !measurementActive;
-
-      if (measurementActive) {
-        measureBtn.textContent = 'Disable measurement';
-        measureStatus.textContent = 'Detector active: which-path information suppresses interference fringes.';
-      } else {
-        measureBtn.textContent = 'Initiate measurement';
-        measureStatus.textContent = 'No detector active: wave interference is visible.';
-      }
-    });
-
-    draw();
+    tick();
   </script>
 </body>
 </html>
